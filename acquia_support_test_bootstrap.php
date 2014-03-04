@@ -95,7 +95,7 @@ function as_debug_d6_bootstrap_full() {
   as_debug('loading enabled modules');
   
   // Load all enabled modules
-  module_load_all();
+  as_debug_d6_module_load_all();
   
   as_debug('modules loaded');
 
@@ -160,7 +160,7 @@ function as_debug_d7_bootstrap_full() {
   as_debug('loading enabled modules');
 
   // Load all enabled modules
-  module_load_all();
+  as_debug_d7_module_load_all();
   
   as_debug('modules loaded');
 
@@ -231,6 +231,35 @@ function as_debug_d6_module_invoke_all() {
   }
 
   return $return;
+}
+
+/**
+ * based on https://api.drupal.org/api/drupal/includes!module.inc/function/module_load_all/7
+ */
+function as_debug_d7_module_load_all($bootstrap = FALSE) {
+  static $has_run = FALSE;
+
+  if (isset($bootstrap)) {
+    foreach (module_list(TRUE, $bootstrap) as $module) {
+      as_debug("loading module $module");
+      drupal_load('module', $module);
+      as_debug("loaded module $module");
+    }
+    // $has_run will be TRUE if $bootstrap is FALSE.
+    $has_run = !$bootstrap;
+  }
+  return $has_run;
+}
+
+/**
+ * based on https://api.drupal.org/api/drupal/includes!module.inc/function/module_load_all/6
+ */
+function as_debug_d6_module_load_all() {
+  foreach (module_list(TRUE, FALSE) as $module) {
+    as_debug("loading module $module");
+    drupal_load('module', $module);
+    as_debug("loaded module $module");
+  }
 }
 
 /**
