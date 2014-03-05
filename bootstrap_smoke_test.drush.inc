@@ -10,6 +10,12 @@ function bootstrap_smoke_test_drush_command() {
     'description' => 'Measure time and memory consumption within a full Drupal bootstrap.',
     'callback' => 'drush_bootstrap_smoke_test',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUSH, // No bootstrap.
+    'options' => array(
+      'no-table' => 'Output rows of pipe-separated results (e.g. for easy sorting).',
+    ),
+    'examples' => array(
+      'drush bst --no-table' => 'Measure time and memory consumption within a full Drupal bootstrap, output rows of pipe-separated results.',
+    ),
     'aliases' => array('bst'),
   );
 
@@ -18,6 +24,7 @@ function bootstrap_smoke_test_drush_command() {
 
 function drush_bootstrap_smoke_test() {
   global $bst_output;
+  $bst_output[] = array('operation', 'time', 'time-delta', 'memory', 'memory-delta');
 
   if (!drush_bootstrap_to_phase(DRUSH_BOOTSTRAP_DRUPAL_DATABASE) || !defined('DRUPAL_ROOT')) {
     return drush_set_error('DRUPAL_SITE_NOT_FOUND', dt('You need to specify an alias or run this command within a drupal site.'));
@@ -28,22 +35,30 @@ function drush_bootstrap_smoke_test() {
 
   if ((defined('DRUPAL_CORE_COMPATIBILITY') && DRUPAL_CORE_COMPATIBILITY == '6.x') || function_exists('drupal_init_language')) {
     drupal_bootstrap(DRUPAL_BOOTSTRAP_PATH);
-    bst_debug_d6_bootstrap_full();
+    bst_bootstrap_full_d6();
   }
   else {
     // assume D7 for now
     drupal_bootstrap(DRUPAL_BOOTSTRAP_LANGUAGE);
-    bst_debug_d7_bootstrap_full();
+    bst_bootstrap_full_d7();
   }
 
-  array_unshift($bst_output, array_keys($bst_output[0]));
-  drush_print_table($bst_output, TRUE);
+  // todo: add options to sort by memory or time-delta within drush
+  if (drush_get_option('no-table')) {
+    foreach ($bst_output as $output_line) {
+      $line = implode('|', $output_line);
+      drush_print($line);
+    }
+  }
+  else {
+    drush_print_table($bst_output, TRUE);
+  }
 }
 
 /**
  * based on https://api.drupal.org/api/drupal/includes%21common.inc/function/_drupal_bootstrap_full/6
  */
-function bst_debug_d6_bootstrap_full() {
+function bst_bootstrap_full_d6() {
   
   timer_start('bst');
  
@@ -110,7 +125,7 @@ function bst_debug_d6_bootstrap_full() {
 /**
  * based on https://api.drupal.org/api/drupal/includes%21common.inc/function/_drupal_bootstrap_full/7
  */ 
-function bst_debug_d7_bootstrap_full() {
+function bst_bootstrap_full_d7() {
 
   timer_start('bst');
 
