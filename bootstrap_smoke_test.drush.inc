@@ -294,8 +294,8 @@ function bst_module_invoke_all_d6() {
 function bst_debug($mark) {
   global $bst_output;
   static $old_time, $old_memory;
-  $time = timer_read('bst');
-  $time_delta = round($time - $old_time, 2);
+  $time = round(timer_read('bst')); // sometimes returns floats without this round
+  $time_delta = $time - $old_time;
   $old_time = $time;
   $memory = round(memory_get_peak_usage(TRUE) / 1024 / 1024, 2) . 'MB';
   $memory_delta = $memory - $old_memory;
