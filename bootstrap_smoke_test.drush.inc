@@ -227,6 +227,17 @@ function bst_module_load_all_d7($bootstrap = FALSE) {
     // $has_run will be TRUE if $bootstrap is FALSE.
     $has_run = !$bootstrap;
   }
+
+  /**
+   * This will slow things down a little, but without it any calls to theme() within hook_init
+   *   implementations will throw an exception (in D7), as it will appear that modules have not
+   *   been loaded. The static within drupal_load should mean this returns fairly fast without
+   *   really doing very much work. We'll track this step for transparency though.
+   */
+  bst_debug("calling the real module_load_all");
+  module_load_all();
+  bst_debug("called the real module_load_all");
+
   return $has_run;
 }
 
