@@ -71,11 +71,12 @@ function cacheplotter_plot_d7($limit) {
  
   foreach ($caches as $cache) {
     print "Checking cache: " . $cache . PHP_EOL;
-    $result = db_query("SELECT cid, length(data) length FROM {" . $cache . "} WHERE LENGTH(data) > :limit", array(':limit' => $limit));
+    $result = db_query("SELECT cid, length(data) length, data FROM {" . $cache . "} WHERE LENGTH(data) > :limit", array(':limit' => $limit));
     if ($result) {
       while ($row = $result->fetchAssoc()) {
         print "cid: " . $row['cid'] . PHP_EOL;
         print "length: " . $row['length'] . " bytes" . PHP_EOL;
+        print "compressed: " . strlen(cacheplotter_compress($row['data'])) . " bytes" . PHP_EOL;
       }
     }
     print PHP_EOL;
@@ -101,13 +102,19 @@ function cacheplotter_plot_d6($limit) {
  
   foreach ($caches as $cache) {
     print "Checking cache: " . $cache . PHP_EOL;
-    $result = db_query("SELECT cid, length(data) length FROM {" . $cache . "} WHERE LENGTH(data) > '%d'", $limit);
+    $result = db_query("SELECT cid, length(data) length, data FROM {" . $cache . "} WHERE LENGTH(data) > '%d'", $limit);
     if ($result) {
       while ($row = db_fetch_array($result)) {
         print "cid: " . $row['cid'] . PHP_EOL;
         print "length: " . $row['length'] . " bytes" . PHP_EOL;
+        print "compressed: " . strlen(cacheplotter_compress($row['data'])) . " bytes" . PHP_EOL;
       }
     }
     print PHP_EOL;
   }
 }
+
+function cacheplotter_compress($data, $compression_level = -1) {
+  return gzcompress($data, $compression_level);
+}
+
